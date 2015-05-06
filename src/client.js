@@ -1,9 +1,7 @@
-var Api = require( './api.js' ),
-	_ = require( 'lodash' );
+var Api = require('./api.js'),
+	_ = require('lodash');
 
-var MB = 1024 * 1024,
-	GB = MB * 1024,
-	client = function() {
+var	client = function() {
 		var waiting = [],
 			send = function( type, message ) {
 				process.send(  { type: type, message: message } ) ;
@@ -23,20 +21,7 @@ var MB = 1024 * 1024,
 			if( !inWaiting ) {
 				send( 'report', '' );
 			}
-		}
-
-		setInterval( function() {
-			var processMemory = process.memoryUsage(),
-				mem = {
-					rssGB: processMemory.rss / GB,
-					heapTotalGB: processMemory.heapTotal / GB,
-					heapUsedGB: processMemory.heapUsed / GB,
-					rssMB: processMemory.rss / MB,
-					heapTotalMB: processMemory.heapTotal / MB,
-					heapUsedMB: processMemory.heapUsed / MB
-				};
-			send( 'memory', mem );
-		}, 1000 );
+		};
 
 		return api;
 };

@@ -1,5 +1,5 @@
-var cluster = require( 'cluster' ),
-	metrics = require( '../src/index.js' );
+var cluster = require( 'cluster' );
+var	metrics = require( '../src/index.js' );
 
 if( cluster.isMaster ) {
 	setTimeout( function() {
