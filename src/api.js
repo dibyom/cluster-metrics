@@ -1,8 +1,6 @@
 var cluster = require('cluster');
 var	_ = require('lodash');
 
-
-
 var Api = function( send ) {
 	var cache = {};
 	var	Counter = function( name ) {
