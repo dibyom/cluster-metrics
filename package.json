@@ -6,7 +6,6 @@
   "dependencies": {
     "lodash": "~2.4.1",
     "measured": "^1.0.0",
-    "metrics": "~0.1.9",
     "postal": "~1.0.1"
   },
   "devDependencies": {
