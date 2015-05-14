@@ -1,5 +1,7 @@
-var Api = require('./api.js'),
-	_ = require('lodash');
+'use strict';
+var _ = require('lodash');
+
+var Api = require('./api.js');
 
 var	client = function() {
 		var waiting = [],

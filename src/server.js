@@ -1,24 +1,33 @@
-var Metrics = require( 'metrics' );
+'use strict';
+
+var _ = require('lodash');
+var measured = require('measured');
 var	postal = require( 'postal' );
+
+var cluster = require('cluster');
+var os = require('os');
+
+var Api = require('./api.js');
+
+var report = measured.createCollection();
+
 var commands = postal.channel( 'incomming' );
-var	cluster = require( 'cluster' );
-var _ = require( 'lodash' );
-var	Api = require( './api.js' );
-var	os = require( 'os' );
-var	report;
+
+commands.subscribe('#', function (msg, env) {
+  var parts = env.topic.split('.');
+  var type = parts[ 1 ];
+  var op = parts[ 0 ];
+  var name = msg.name;
+  var metric = createMetric(type, name);
+  operations[op](metric, msg);
+});
 
 var createMetric = function( type, name ) {
-  var metric = report.getMetric( name );
-  if( !metric ) {
-    metric = new Metrics[ type ]();
-    report.addMetric( name, metric );
-  }
-  return metric;
+  return report
+    .__proto__[type.toLowerCase()]
+    .call(report, name);
 };
 
-var	apply = function( type, name, fun ) {
-  fun( createMetric( type, name ) );
-};
 var	operations = {
   incr: function( counter, msg ) {
     counter.inc( msg.val );
@@ -37,30 +46,11 @@ var	operations = {
   }
 };
 
-commands.subscribe( '#', function( msg, env ) {
-  var parts = env.topic.split( '.' ),
-    type = parts[ 1 ],
-    op = parts[ 0 ],
-    name = msg.name,
-    metric = createMetric( type, name );
-  operations[ op ]( metric, msg );
-} );
-
-var MB = 1024 * 1024;
-var	GB = MB * 1024;
-var	total = os.totalmem();
-var	TOTALMB = total / MB;
-var	TOTALGB = total / GB;
-var	memoryList = {};
-
 var	listen = function() {
-  report = new Metrics.Report();
   cluster.on( 'online', function( worker ) {
     worker.on( 'message', function( data ) {
       if( data.type == 'report' ) {
-        worker.send( { type: 'report', report: report.summary() } );
-      } else if ( data.type == 'memory' ) {
-        memoryList[ worker.id ] = data.message;
+        worker.send( { type: 'report', report: report.toJSON() } );
       } else {
         commands.publish( data.type, data.message );
       }
@@ -68,15 +58,14 @@ var	listen = function() {
   } );
 
   report.getMetrics = function( callback ) {
-    var  metrics = report.summary();
-    callback( metrics );
+    callback( report.toJSON() );
   };
 
   var send = function( type, message ) {
     commands.publish( type, message );
   };
 
-  return _.merge( report, new Api( send ) );
+  return _.merge(report, new Api(send));
 };
 
 module.exports = listen;

@@ -8,13 +8,14 @@ if( cluster.isMaster ) {
 		} );
 		process.exit();
 	}, 5000 );
-	setInterval( function() {
-		metrics.meter( 'test.meter' ).record( 2 );
-	}, 100 );
+//	setInterval( function() {
+//		metrics.meter( 'test.meter' ).record( 2 );
+//	}, 100 );
 	cluster.fork();
 	cluster.fork();
 } else {
 	setInterval( function() {
+    metrics.meter('test.meter').record(2);
 		metrics.timer( 'test.timer' ).record();
 		metrics.counter( 'test.count' ).incr();
 		metrics.histogram( 'test.hist' ).record( 5 );
